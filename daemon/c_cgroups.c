@@ -133,8 +133,8 @@ static const char *c_cgroups_devices_generic_whitelist[] = {
 	//"c 4:0 rwm", // tty0
 
 	/* alternate tty devices - seem to be necessary for android logwrapper */
-	//"c 5:0 rwm", // tty
-	//"c 5:1 rwm", // console
+	"c 5:0 rwm", // tty
+	"c 5:1 rwm", // console
 	"c 5:2 rwm", // ptmx
 
 	//"c 7:* rwm", // Virtual console capture devices
@@ -968,27 +968,18 @@ c_cgroups_devices_is_dev_allowed(c_cgroups_t *cgroups, int major, int minor)
 {
 	ASSERT(cgroups);
 	// also check wildcard '*' represented as -1 in list of (int,int)
-	//IF_TRUE_RETVAL(major < 0 || minor < 0, false);
+	IF_TRUE_RETVAL(major < 0 || minor < 0, false);
 
-	//int dev[2] = { major, minor };
+	int dev[2] = { major, minor };
 
 	/* search in assigned devices */
-	//if (c_cgroups_list_contains_match(cgroups->assigned_devs, dev))
-	//	return true;
-	for (list_t *l = cgroups->assigned_devs; l != NULL; l = l->next) {
-		int *dev = l->data;
-		if ((dev[0] == -1 || major == dev[0]) && (dev[1] == -1 || minor == dev[1]))
-			return true;
-	}
-
+	if (c_cgroups_list_contains_match(cgroups->assigned_devs, dev))
+		return true;
+	
 	/* search in allowed devices */
-	//if (c_cgroups_list_contains_match(cgroups->allowed_devs, dev))
-	//	return true;
-	for (list_t *l = cgroups->allowed_devs; l != NULL; l = l->next) {
-		int *dev = l->data;
-		if ((dev[0] == -1 || major == dev[0]) && (dev[1] == -1 || minor == dev[1]))
-			return true;
-	}
+	if (c_cgroups_list_contains_match(cgroups->allowed_devs, dev))
+		return true;
+	
 	return false;
 }
 
